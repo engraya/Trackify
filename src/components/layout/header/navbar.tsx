@@ -6,8 +6,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { buttonVariants } from "@src/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@src/components/ui/sheet";
+import {
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton
+} from '@clerk/nextjs'
+import Logo from "@components/Logo";
 
-import { cn } from "@src/lib/utils";
 export default function Navbar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   return (
@@ -20,38 +26,41 @@ export default function Navbar() {
           height="30"
           className="mr-2 rounded-sm object-contain"
         />
-        <p>ChadNext</p>
+        <p>Trackify</p>
       </Link>
       <div className="hidden items-center gap-12 lg:flex 2xl:gap-16">
+        <SignedOut>
+        <div className="bg-slate-200 p-3 rounded-lg">
+            <SignInButton/>
+            </div>
+        </SignedOut>
+   
+      </div>
+      <div className="hidden items-center gap-12 lg:flex 2xl:gap-16">
+        <SignedIn>
         <div className="space-x-4 text-center text-sm leading-loose text-muted-foreground md:text-left">
           <Link
-            href="/changelog"
+            href="#"
             className="font-semibold hover:underline hover:underline-offset-4"
           >
-                    fdgdfg
+            Dashboard
           </Link>
           <Link
-            href="/about"
+            href="#"
             className="font-semibold hover:underline hover:underline-offset-4"
           >
-                       fdgdfg
+            Transactions
+          </Link>
+          <Link
+            href="#"
+            className="font-semibold hover:underline hover:underline-offset-4"
+          >
+            Manage
           </Link>
         </div>
-        <div className="flex items-center gap-x-2">
-            <Link
-              href="/dashboard"
-              className={cn(
-                buttonVariants({ variant: "outline" }),
-                "bg-secondary"
-              )}
-              onClick={() => setIsModalOpen(false)}
-            >
-                         fdgdfg
-            </Link>
-            <Link href="/login" className={buttonVariants()}>
-                         fdgdfg
-            </Link>
-        </div>
+        <UserButton/>
+        </SignedIn>
+   
       </div>
       <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
         <SheetTrigger className="lg:hidden">
@@ -59,6 +68,14 @@ export default function Navbar() {
           <MenuIcon />
         </SheetTrigger>
         <SheetContent>
+          <SignedOut>
+          <div className="flex flex-col items-center space-y-10 py-10">
+            <div className="bg-slate-200 p-3 rounded-lg">
+            <SignInButton/>
+            </div>
+          </div>
+          </SignedOut>
+          <SignedIn>
           <div className="flex flex-col items-center space-y-10 py-10">
             <div className="space-y-4 text-center text-sm leading-loose text-muted-foreground">
               <Link
@@ -66,14 +83,14 @@ export default function Navbar() {
                 className="block font-semibold hover:underline hover:underline-offset-4"
                 onClick={() => setIsModalOpen(false)}
               >
-                fdgdfg
+                Dashboard
               </Link>
               <Link
                 href="/about"
                 className="block font-semibold hover:underline hover:underline-offset-4"
                 onClick={() => setIsModalOpen(false)}
               >
-                          fdgdfg
+              Transactions
               </Link>
                 <>
                   <Link
@@ -81,18 +98,13 @@ export default function Navbar() {
                     className="block font-semibold hover:underline hover:underline-offset-4"
                     onClick={() => setIsModalOpen(false)}
                   >
-                                fdgdfg
+                  Manage
                   </Link>
                 </>
-                <Link
-                  href="/login"
-                  className={buttonVariants()}
-                  onClick={() => setIsModalOpen(false)}
-                >
-                              fdgdfg
-                </Link>
+                <UserButton/>
             </div>
           </div>
+          </SignedIn>
         </SheetContent>
       </Sheet>
     </nav>

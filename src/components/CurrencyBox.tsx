@@ -17,21 +17,84 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { currencies } from "@src/lib/currencies"
-
-
+import { currencies, Currency } from "@src/lib/currencies"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import SkeletonWrapper from "./SkeletonWrapper"
+import { UserSettings } from "@prisma/client"
+import { useEffect } from "react"
+import { UpdateUserCurrency } from "@actions/userSettings"
+import { toast } from "sonner"
+import { useState } from "react"
+ 
 
 export function CurrencyBox() {
   const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
+  const [value, setValue] = React.useState("");
+  const [selectedOption, setSelectedOption] = useState<Currency | null>(null)
+
+  const userSettings = useQuery<UserSettings>({
+    queryKey : ["userSettings"],
+    queryFn : () => fetch("/api/user-settings").then((res) => res.json()),
+  });
+
+  console.log("User Settings", userSettings);
+
+  useEffect(() => {
+    if (!userSettings.data) return;
+    const userCurrency = currencies.find(
+      (currency) => currency.value === userSettings.data.currency
+    );
+    if (userCurrency) setValue(userCurrency);
+  }, [userSettings.data]);
+
+
+  const mutation = useMutation({
+    mutationFn : UpdateUserCurrency, 
+    onSuccess : (data : UserSettings) => {
+      toast.success('Currency updated successfully....', {
+        id : 'update-currency',
+      });
+
+      setSelectedOption(
+        currencies.find((currency) => currency.value === data.currency) || null
+      )
+    },
+    onError : (e) => {
+      toast.error("Something went wrong...", {
+        id : "update-currency"
+      })
+    }
+  })
+
+  const selectOption = React.useCallback(
+    (currency : Currency | null) => {
+      if (!currency) {
+        toast.error("Please select a currency to continue");
+        return
+      }
+
+      toast.loading("Updating currency......", {
+        id : "updated-currency",
+      });
+
+      mutation.mutate(currency.value);
+    },
+    [mutation]
+  )
+  
+
+
+
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <SkeletonWrapper isLoading={userSettings.isFetching}>
+        <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          disabled={mutation.isPending}
           className="w-[200px] justify-between"
         >
           {value
@@ -69,5 +132,7 @@ export function CurrencyBox() {
         </Command>
       </PopoverContent>
     </Popover>
+    </SkeletonWrapper>
+
   )
 }
